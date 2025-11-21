@@ -4,16 +4,13 @@
 <meta charset="utf-8" />
 <title>No Pasa Nada Air Tracker</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js"></script>
 <link href="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css" rel="stylesheet" />
-
 <style>
 body { margin:0; padding:0; }
 #map { position:absolute; top:0; bottom:0; width:100%; }
 </style>
 </head>
-
 <body>
 <div id="map"></div>
 
@@ -23,50 +20,40 @@ mapboxgl.accessToken = 'pk.eyJ1IjoiYnJpZ2h0cGl4ZWwyMDI0IiwiYSI6ImNtaThtbW9kYTBld
 const map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/mapbox/streets-v12',
-    center: [-100.0, 30.0],
+    center: [-100, 30],
     zoom: 6
 });
 
-let marker, lastPos;
+let marker = null;
 
-// Wait until plane object exists and has valid coordinates
-function waitForPlane(callback) {
-    if (
-        window.geofs &&
-        window.geofs.player &&
-        window.geofs.player.aircraft &&
-        window.geofs.player.aircraft.position &&
-        window.geofs.player.aircraft.position.lat !== 0 &&
-        window.geofs.player.aircraft.position.lon !== 0
-    ) {
-        callback();
+function waitForPlane() {
+    const plane = window.geofs?.player?.aircraft;
+
+    if(plane && plane.position?.lat && plane.position?.lon) {
+        const startPos = [plane.position.lon, plane.position.lat];
+        marker = new mapboxgl.Marker({color:'red'}).setLngLat(startPos).addTo(map);
+        const popup = new mapboxgl.Popup({ offset:25 });
+        marker.setPopup(popup);
+        map.setCenter(startPos);
+        lastPos = [...startPos];
+        startTracking();
     } else {
-        setTimeout(() => waitForPlane(callback), 500);
+        setTimeout(waitForPlane, 500);
     }
 }
 
-waitForPlane(() => {
-    const plane = window.geofs.player.aircraft;
-    const lat = plane.position.lat;
-    const lon = plane.position.lon;
+let lastPos = [0,0];
 
-    lastPos = [lon, lat];
-    marker = new mapboxgl.Marker({ color: 'red' }).setLngLat(lastPos).addTo(map);
-
-    const popup = new mapboxgl.Popup({ offset: 25 });
-    marker.setPopup(popup);
-
-    map.setCenter(lastPos);
-
+function startTracking() {
     function animateMarker(newPos) {
         const frames = 10;
-        const deltaLng = (newPos[0] - lastPos[0]) / frames;
-        const deltaLat = (newPos[1] - lastPos[1]) / frames;
-        let i = 0;
+        const deltaLng = (newPos[0] - lastPos[0])/frames;
+        const deltaLat = (newPos[1] - lastPos[1])/frames;
+        let i=0;
         function step() {
-            if (i >= frames) return;
-            lastPos[0] += deltaLng;
-            lastPos[1] += deltaLat;
+            if(i>=frames) return;
+            lastPos[0]+=deltaLng;
+            lastPos[1]+=deltaLat;
             marker.setLngLat(lastPos);
             i++;
             requestAnimationFrame(step);
@@ -83,12 +70,13 @@ waitForPlane(() => {
 
         animateMarker([lon, lat]);
         map.setCenter([lon, lat]);
-        popup.setHTML(`<b>Plane:</b> ${type}<br><b>Altitude:</b> ${Math.round(alt)} ft`);
+        marker.getPopup().setHTML(`<b>Plane:</b> ${type}<br><b>Altitude:</b> ${Math.round(alt)} ft`);
     }
 
     setInterval(updatePlane, 2000);
-});
-</script>
+}
 
+waitForPlane();
+</script>
 </body>
 </html>
