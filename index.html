@@ -26,28 +26,28 @@ mapboxgl.accessToken = 'pk.eyJ1IjoiYnJpZ2h0cGl4ZWwyMDI0IiwiYSI6ImNtaThtbW9kYTBld
 const map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/mapbox/streets-v12',
-    center: [-100, 30],
+    center: [-100,30],
     zoom: 6
 });
 
-// Custom marker element
+// Create marker element
 const markerEl = document.createElement('div');
 markerEl.className = 'marker';
-markerEl.style.backgroundColor = 'blue'; // start grounded
+markerEl.style.backgroundColor = 'blue';
 
 const marker = new mapboxgl.Marker(markerEl).setLngLat([-100,30]).addTo(map);
 const popup = new mapboxgl.Popup({ offset: 25 });
 marker.setPopup(popup);
 
-// Listen for GeoFS position updates
+// Listen for GeoFS position messages
 window.addEventListener('message', (event) => {
     if(event.data.type === 'GEOFS_POSITION') {
         const pos = event.data.data;
         const color = pos.alt > 5 ? 'red' : 'blue';
         markerEl.style.backgroundColor = color;
         marker.setLngLat([pos.lon, pos.lat]);
-        popup.setHTML(`<b>Plane:</b> ${pos.type}<br><b>Altitude:</b> ${Math.round(pos.alt)} ft`);
         map.setCenter([pos.lon, pos.lat]);
+        popup.setHTML(`<b>Plane:</b> ${pos.type}<br><b>Altitude:</b> ${Math.round(pos.alt)} ft`);
     }
 });
 </script>
