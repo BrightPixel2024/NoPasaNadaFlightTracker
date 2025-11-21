@@ -5,7 +5,6 @@
 <title>No Pasa Nada Air Tracker</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-<!-- Updated Mapbox URLs (v3.3.0) -->
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js"></script>
 <link href="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css" rel="stylesheet" />
 
@@ -14,22 +13,36 @@ body { margin:0; padding:0; }
 #map { position:absolute; top:0; bottom:0; width:100%; }
 </style>
 </head>
-
 <body>
 <div id="map"></div>
 
 <script>
-// Your Mapbox access token
 mapboxgl.accessToken = 'pk.eyJ1IjoiYnJpZ2h0cGl4ZWwyMDI0IiwiYSI6ImNtaThtbW9kYTBldGEybG9zYXFnZG93dzkifQ.lkI7df4o4LxpxkrtLtSIhw';
 
-// Load world map centered on North America
 const map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/mapbox/streets-v12',
     center: [-100.0, 30.0],
-    zoom: 3
+    zoom: 5
 });
-</script>
 
+// Initial marker at a default position
+const marker = new mapboxgl.Marker().setLngLat([-100.0, 30.0]).addTo(map);
+
+// Function to update marker from GeoFS
+function updatePlane() {
+    if (!window.geofs || !window.geofs.player || !window.geofs.player.aircraft) return;
+
+    const plane = window.geofs.player.aircraft;
+    const lat = plane.position.lat;
+    const lon = plane.position.lon;
+
+    marker.setLngLat([lon, lat]);
+    map.setCenter([lon, lat]);
+}
+
+// Update every 2 seconds
+setInterval(updatePlane, 2000);
+</script>
 </body>
 </html>
