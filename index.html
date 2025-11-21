@@ -9,6 +9,13 @@
 <style>
 body { margin:0; padding:0; }
 #map { position:absolute; top:0; bottom:0; width:100%; }
+.marker {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid white;
+    background-color: red;
+}
 </style>
 </head>
 <body>
@@ -34,21 +41,24 @@ function waitForPlane() {
         const startPos = [plane.position.lon, plane.position.lat];
         lastPos = [...startPos];
 
-        // Initial marker color: blue if on ground, red if flying
-        const color = plane.position.alt > 5 ? 'red' : 'blue';
-        marker = new mapboxgl.Marker({color: color}).setLngLat(startPos).addTo(map);
+        // Create a custom HTML marker element
+        const el = document.createElement('div');
+        el.className = 'marker';
+        el.style.backgroundColor = plane.position.alt > 5 ? 'red' : 'blue';
+
+        marker = new mapboxgl.Marker(el).setLngLat(startPos).addTo(map);
 
         const popup = new mapboxgl.Popup({ offset: 25 });
         marker.setPopup(popup);
         map.setCenter(startPos);
 
-        startTracking();
+        startTracking(el);
     } else {
         setTimeout(waitForPlane, 500);
     }
 }
 
-function startTracking() {
+function startTracking(markerEl) {
     function animateMarker(newPos) {
         const frames = 10;
         const deltaLng = (newPos[0] - lastPos[0])/frames;
@@ -72,9 +82,8 @@ function startTracking() {
         const alt = plane.position.alt;
         const type = plane.name || "Unknown";
 
-        // Change marker color if grounded or flying
-        const color = alt > 5 ? 'red' : 'blue';
-        marker.getElement().style.backgroundColor = color;
+        // Update marker color based on grounded/flying
+        markerEl.style.backgroundColor = alt > 5 ? 'red' : 'blue';
 
         animateMarker([lon, lat]);
         map.setCenter([lon, lat]);
