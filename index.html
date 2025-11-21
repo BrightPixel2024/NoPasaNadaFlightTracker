@@ -25,24 +25,28 @@ const map = new mapboxgl.Map({
 });
 
 let marker = null;
+let lastPos = [0,0];
 
 function waitForPlane() {
     const plane = window.geofs?.player?.aircraft;
 
-    if(plane && plane.position?.lat && plane.position?.lon) {
+    if (plane && plane.position?.lat && plane.position?.lon) {
         const startPos = [plane.position.lon, plane.position.lat];
-        marker = new mapboxgl.Marker({color:'red'}).setLngLat(startPos).addTo(map);
-        const popup = new mapboxgl.Popup({ offset:25 });
+        lastPos = [...startPos];
+
+        // Initial marker color: blue if on ground, red if flying
+        const color = plane.position.alt > 5 ? 'red' : 'blue';
+        marker = new mapboxgl.Marker({color: color}).setLngLat(startPos).addTo(map);
+
+        const popup = new mapboxgl.Popup({ offset: 25 });
         marker.setPopup(popup);
         map.setCenter(startPos);
-        lastPos = [...startPos];
+
         startTracking();
     } else {
         setTimeout(waitForPlane, 500);
     }
 }
-
-let lastPos = [0,0];
 
 function startTracking() {
     function animateMarker(newPos) {
@@ -67,6 +71,10 @@ function startTracking() {
         const lon = plane.position.lon;
         const alt = plane.position.alt;
         const type = plane.name || "Unknown";
+
+        // Change marker color if grounded or flying
+        const color = alt > 5 ? 'red' : 'blue';
+        marker.getElement().style.backgroundColor = color;
 
         animateMarker([lon, lat]);
         map.setCenter([lon, lat]);
