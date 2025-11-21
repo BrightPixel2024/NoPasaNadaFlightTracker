@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Global Mapbox Map</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.20.0/mapbox-gl.js"></script>
+<link href="https://api.mapbox.com/mapbox-gl-js/v2.20.0/mapbox-gl.css" rel="stylesheet" />
+<style>
+html, body { height: 100%; margin:0; padding:0; }
+#map { position:absolute; top:0; bottom:0; width:100%; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<script>
+mapboxgl.accessToken = 'pk.eyJ1IjoiYnJpZ2h0cGl4ZWwyMDI0IiwiYSI6ImNtaThtbW9kYTBldGEybG9zYXFnZG93dzkifQ.lkI7df4o4LxpxkrtLtSIhw';
+
+const map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v12',
+    center: [0, 20], // somewhere central-ish
+    zoom: 1.5        // zoomed out to show the entire world
+});
+</script>
+</body>
+</html>
