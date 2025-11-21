@@ -4,85 +4,32 @@
 <meta charset="utf-8" />
 <title>No Pasa Nada Air Tracker</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<script src="https://api.mapbox.com/mapbox-gl-js/v2.20.0/mapbox-gl.js"></script>
-<link href="https://api.mapbox.com/mapbox-gl-js/v2.20.0/mapbox-gl.css" rel="stylesheet" />
-<script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+
+<!-- Updated Mapbox URLs (v3.3.0) -->
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js"></script>
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css" rel="stylesheet" />
+
 <style>
-html, body { height:100%; margin:0; padding:0; }
-#map { height:100%; width:100%; }
+body { margin:0; padding:0; }
+#map { position:absolute; top:0; bottom:0; width:100%; }
 </style>
 </head>
+
 <body>
 <div id="map"></div>
+
 <script>
+// Your Mapbox access token
 mapboxgl.accessToken = 'pk.eyJ1IjoiYnJpZ2h0cGl4ZWwyMDI0IiwiYSI6ImNtaThtbW9kYTBldGEybG9zYXFnZG93dzkifQ.lkI7df4o4LxpxkrtLtSIhw';
 
+// Load world map centered on North America
 const map = new mapboxgl.Map({
-  container: 'map',
-  style: 'mapbox://styles/mapbox/streets-v12',
-  center: [0, 20], // global view
-  zoom: 1.5
-});
-
-// Example route (replace with GeoFS later)
-const route = {
-  type: 'Feature',
-  geometry: {
-    type: 'LineString',
-    coordinates: [
-      [-100.92094, 29.36763],
-      [-100.85386, 29.20732],
-      [-100.78860, 29.04777]
-    ]
-  }
-};
-
-const point = {
-  type: 'FeatureCollection',
-  features: [{
-    type: 'Feature',
-    geometry: { type: 'Point', coordinates: route.geometry.coordinates[0] }
-  }]
-};
-
-map.on('load', () => {
-  map.addSource('route', { type: 'geojson', data: route });
-  map.addSource('point', { type: 'geojson', data: point });
-
-  map.addLayer({
-    id: 'route',
-    type: 'line',
-    source: 'route',
-    paint: { 'line-color': '#007cbf', 'line-width': 3 }
-  });
-
-  map.addLayer({
-    id: 'point',
-    type: 'circle',
-    source: 'point',
-    paint: { 'circle-radius': 6, 'circle-color': '#ff0000' }
-  });
-
-  // Animate the point along the route
-  const lineDistance = turf.length(route);
-  const steps = 500;
-  const arc = [];
-
-  for (let i = 0; i < lineDistance; i += lineDistance / steps) {
-    const segment = turf.along(route, i);
-    arc.push(segment.geometry.coordinates);
-  }
-
-  let counter = 0;
-  function animate() {
-    point.features[0].geometry.coordinates = arc[counter];
-    map.getSource('point').setData(point);
-    counter = (counter + 1) % arc.length;
-    requestAnimationFrame(animate);
-  }
-
-  animate();
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v12',
+    center: [-100.0, 30.0],
+    zoom: 3
 });
 </script>
+
 </body>
 </html>
