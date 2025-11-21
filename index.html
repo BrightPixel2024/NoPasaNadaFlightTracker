@@ -23,34 +23,46 @@ mapboxgl.accessToken = 'pk.eyJ1IjoiYnJpZ2h0cGl4ZWwyMDI0IiwiYSI6ImNtaThtbW9kYTBld
 const map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/mapbox/streets-v12',
-    center: [-100, 30],
-    zoom: 5
+    center: [-100.0, 30.0],
+    zoom: 6
 });
 
-// Wait for GeoFS to fully load before starting tracking
-function waitForGeoFS(callback) {
-    if (window.geofs && window.geofs.player && window.geofs.player.aircraft) {
+let marker, lastPos;
+
+// Wait until plane object exists and has valid coordinates
+function waitForPlane(callback) {
+    if (
+        window.geofs &&
+        window.geofs.player &&
+        window.geofs.player.aircraft &&
+        window.geofs.player.aircraft.position &&
+        window.geofs.player.aircraft.position.lat !== 0 &&
+        window.geofs.player.aircraft.position.lon !== 0
+    ) {
         callback();
     } else {
-        setTimeout(() => waitForGeoFS(callback), 500);
+        setTimeout(() => waitForPlane(callback), 500);
     }
 }
 
-waitForGeoFS(() => {
+waitForPlane(() => {
     const plane = window.geofs.player.aircraft;
+    const lat = plane.position.lat;
+    const lon = plane.position.lon;
 
-    const marker = new mapboxgl.Marker().setLngLat([plane.position.lon, plane.position.lat]).addTo(map);
+    lastPos = [lon, lat];
+    marker = new mapboxgl.Marker({ color: 'red' }).setLngLat(lastPos).addTo(map);
+
     const popup = new mapboxgl.Popup({ offset: 25 });
     marker.setPopup(popup);
 
-    let lastPos = [plane.position.lon, plane.position.lat];
+    map.setCenter(lastPos);
 
     function animateMarker(newPos) {
         const frames = 10;
         const deltaLng = (newPos[0] - lastPos[0]) / frames;
         const deltaLat = (newPos[1] - lastPos[1]) / frames;
         let i = 0;
-
         function step() {
             if (i >= frames) return;
             lastPos[0] += deltaLng;
@@ -77,5 +89,6 @@ waitForGeoFS(() => {
     setInterval(updatePlane, 2000);
 });
 </script>
+
 </body>
 </html>
